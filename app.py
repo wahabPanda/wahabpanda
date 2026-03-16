@@ -7,7 +7,7 @@ from flask import Flask, render_template_string, request, Response, stream_with_
 app = Flask(__name__)
 
 # ==========================================
-# 🎨 1. COMMON NAVBAR (JavaScript & Dark Mode)
+# 🎨 1. COMMON NAVBAR
 # ==========================================
 NAVBAR = """
 <style>
@@ -17,12 +17,10 @@ NAVBAR = """
     body.light-mode .text-zinc-400 { color: #475569 !important; }
     body.light-mode .bg-\\[\\#18181b\\] { background-color: #ffffff !important; }
     body.light-mode .bg-zinc-900 { background-color: #f1f5f9 !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
-    body.light-mode .bg-\\[\\#09090b\\] { background-color: #f8fafc !important; }
-    body.light-mode .bg-\\[\\#0f0f13\\] { background-color: #ffffff !important; }
 </style>
 
-<nav class="w-full bg-[#0f0f13] border-b border-zinc-800 p-4 sticky top-0 z-40 shadow-xl flex justify-between items-center transition-colors duration-300">
-    <a href="/" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500 flex items-center gap-2">🐼 WahabPanda</a>
+<nav class="w-full bg-[#0f0f13] border-b border-zinc-800 p-4 sticky top-0 z-40 shadow-xl flex justify-between items-center">
+    <a href="/" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">🐼 WahabPanda</a>
     <button onclick="toggleMenu()" class="text-zinc-400 hover:text-emerald-400 focus:outline-none">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
     </button>
@@ -33,52 +31,19 @@ NAVBAR = """
         <a href="/" class="text-2xl font-black text-emerald-400">🐼 WahabPanda</a>
         <button onclick="toggleMenu()" class="bg-zinc-800 text-emerald-400 p-2 rounded-lg hover:bg-zinc-700 transition"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
     </div>
-
-    <div class="flex flex-col p-6">
-        <a href="/tool/sora" class="text-zinc-300 font-bold hover:text-emerald-400 py-4 border-b border-zinc-800/50">✨ Sora AI</a>
-        <a href="/tool/tiktok" class="text-zinc-300 font-bold hover:text-pink-400 py-4 border-b border-zinc-800/50">🎵 TikTok</a>
-        <a href="/tool/youtube" class="text-zinc-300 font-bold hover:text-red-500 py-4 border-b border-zinc-800/50">▶️ YouTube</a>
-        <a href="/tool/instagram" class="text-zinc-300 font-bold hover:text-purple-400 py-4 border-b border-zinc-800/50">📸 Instagram</a>
-        <a href="/tool/facebook" class="text-zinc-300 font-bold hover:text-blue-500 py-4 border-b border-zinc-800/50">📘 Facebook</a>
-        <a href="/tool/twitter" class="text-zinc-300 font-bold hover:text-gray-300 py-4 border-b border-zinc-800/50">𝕏 Twitter (X)</a>
-        <a href="/tool/pinterest" class="text-zinc-300 font-bold hover:text-red-600 py-4 border-b border-zinc-800/50">📌 Pinterest</a>
-        <a href="/tool/reddit" class="text-zinc-300 font-bold hover:text-orange-500 py-4 border-b border-zinc-800/50">👽 Reddit</a>
-        <a href="/tool/snapchat" class="text-zinc-300 font-bold hover:text-yellow-400 py-4 border-b border-zinc-800/50">👻 Snapchat</a>
-        
-        <div class="mt-8 mb-4">
-            <button onclick="toggleTheme(); toggleMenu();" class="flex items-center text-emerald-400 font-bold py-2 w-full text-left">
-                <span id="theme-icon" class="mr-3 text-xl">☀️</span> <span id="theme-text" data-i18n="m-light">Light Mode</span>
-            </button>
-        </div>
-
-        <div class="mt-6 mb-10">
-            <p class="text-zinc-500 text-sm mb-4 font-bold tracking-widest flex items-center"><span class="mr-2">🌐</span> LANGUAGE</p>
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="setLang('en'); toggleMenu();" id="lang-en" class="lang-btn text-zinc-400 hover:text-white text-sm text-left transition">🇺🇸 English</button>
-                <button onclick="setLang('ur'); toggleMenu();" id="lang-ur" class="lang-btn text-zinc-400 hover:text-white text-sm text-left transition">🇵🇰 اردو</button>
-            </div>
-        </div>
+    <div class="flex flex-col p-6 font-bold text-zinc-300">
+        <a href="/tool/tiktok" class="py-4 border-b border-zinc-800/50">🎵 TikTok</a>
+        <a href="/tool/youtube" class="py-4 border-b border-zinc-800/50">▶️ YouTube</a>
+        <a href="/tool/instagram" class="py-4 border-b border-zinc-800/50">📸 Instagram</a>
+        <a href="/tool/facebook" class="py-4 border-b border-zinc-800/50">📘 Facebook</a>
+        <a href="/tool/twitter" class="py-4 border-b border-zinc-800/50">𝕏 Twitter (X)</a>
+        <a href="/tool/pinterest" class="py-4 border-b border-zinc-800/50">📌 Pinterest</a>
+        <a href="/tool/snapchat" class="py-4 border-b border-zinc-800/50">👻 Snapchat</a>
     </div>
 </div>
 
 <script>
-    const i18n = {
-        'en': { 'm-light': 'Light Mode', 'm-dark': 'Dark Mode', 'h-t1': 'Download Videos', 'h-t2': 'From Anywhere.', 'h-desc': 'Fast, free video downloads. Support Single & Bulk Links.', 'btn-ext': 'Extract All Videos', 'wait': 'Extracting Videos... Please wait ⏳', 'p-link': 'Paste links here (one link per line)...', 'btn-dl': 'Download MP4' },
-        'ur': { 'm-light': 'لائٹ موڈ', 'm-dark': 'ڈارک موڈ', 'h-t1': 'ویڈیوز ڈاؤنلوڈ کریں', 'h-t2': 'کہیں سے بھی۔', 'h-desc': 'اب ایک ساتھ کئی ویڈیوز بھی ڈاؤنلوڈ کی جا سکتی ہیں۔', 'btn-ext': 'تمام ویڈیوز نکالیں', 'wait': 'ویڈیوز نکالی جا رہی ہیں... ⏳', 'p-link': 'یہاں لنکس پیسٹ کریں (ہر لائن میں ایک لنک)...', 'btn-dl': 'ڈاؤنلوڈ کریں' }
-    };
     function toggleMenu() { const m = document.getElementById('mobileMenu'); m.classList.toggle('hidden'); m.classList.toggle('flex'); }
-    function toggleTheme() { document.body.classList.toggle('light-mode'); const isLight = document.body.classList.contains('light-mode'); localStorage.setItem('theme', isLight ? 'light' : 'dark'); updateThemeUI(isLight); }
-    function updateThemeUI(isLight) { const lang = localStorage.getItem('lang') || 'en'; document.getElementById('theme-icon').innerText = isLight ? '🌙' : '☀️'; document.getElementById('theme-text').innerText = isLight ? i18n[lang]['m-dark'] : i18n[lang]['m-light']; }
-    function setLang(lang) {
-        localStorage.setItem('lang', lang);
-        document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if(i18n[lang][key]) el.innerText = i18n[lang][key]; });
-        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.getAttribute('data-i18n-placeholder'); if(i18n[lang][key]) el.placeholder = i18n[lang][key]; });
-        document.querySelectorAll('.lang-btn').forEach(btn => { btn.classList.remove('bg-emerald-900/20', 'text-emerald-400', 'border-emerald-500/30'); btn.classList.add('text-zinc-400'); btn.classList.remove('border'); });
-        const activeBtn = document.getElementById('lang-' + lang);
-        if(activeBtn) { activeBtn.classList.add('bg-emerald-900/20', 'text-emerald-400', 'border', 'border-emerald-500/30'); activeBtn.classList.remove('text-zinc-400'); }
-        updateThemeUI(document.body.classList.contains('light-mode')); 
-    }
-    window.onload = () => { if(localStorage.getItem('theme') === 'light') { document.body.classList.add('light-mode'); updateThemeUI(true); } const savedLang = localStorage.getItem('lang') || 'en'; setLang(savedLang); };
 </script>
 """
 
@@ -91,29 +56,26 @@ HOME_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WahabPanda | Universal Video Downloader</title>
+    <title>WahabPanda | Best Video Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }</style>
+    <style>body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="flex flex-col items-center min-h-screen">
     {{ navbar|safe }}
-    <div class="text-center mt-12 mb-10 px-4 transition-all">
+    <div class="text-center mt-12 mb-10 px-4">
         <h1 class="text-5xl md:text-7xl font-black mb-4 tracking-tighter text-white">
-            <span data-i18n="h-t1">Download Videos</span> <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500" data-i18n="h-t2">From Anywhere.</span>
+            Download Videos <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">From Anywhere.</span>
         </h1>
-        <p class="text-zinc-400 text-lg max-w-2xl mx-auto" data-i18n="h-desc">Fast, free video downloads. Support Single & Bulk Links.</p>
+        <p class="text-zinc-400 text-lg max-w-2xl mx-auto">Fast, free, and no watermarks. Support for YouTube, TikTok, Pinterest & more.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full px-4 mb-20">
-        <a href="/tool/tiktok" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-pink-500 transition shadow-lg"><div class="text-3xl mb-3">🎵</div><h2 class="text-xl font-bold text-pink-400">TikTok</h2></a>
-        <a href="/tool/youtube" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-red-500 transition shadow-lg"><div class="text-3xl mb-3">▶️</div><h2 class="text-xl font-bold text-red-500">YouTube</h2></a>
-        <a href="/tool/sora" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-emerald-500 transition shadow-lg"><div class="text-3xl mb-3">✨</div><h2 class="text-xl font-bold text-emerald-400">Sora AI</h2></a>
-        <a href="/tool/instagram" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-purple-500 transition shadow-lg"><div class="text-3xl mb-3">📸</div><h2 class="text-xl font-bold text-purple-400">Instagram</h2></a>
-        <a href="/tool/facebook" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-blue-600 transition shadow-lg"><div class="text-3xl mb-3">📘</div><h2 class="text-xl font-bold text-blue-500">Facebook</h2></a>
-        <a href="/tool/twitter" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-gray-400 transition shadow-lg"><div class="text-3xl mb-3">𝕏</div><h2 class="text-xl font-bold text-gray-400">Twitter (X)</h2></a>
-        <a href="/tool/pinterest" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-red-600 transition shadow-lg"><div class="text-3xl mb-3">📌</div><h2 class="text-xl font-bold text-red-600">Pinterest</h2></a>
-        <a href="/tool/reddit" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-orange-500 transition shadow-lg"><div class="text-3xl mb-3">👽</div><h2 class="text-xl font-bold text-orange-500">Reddit</h2></a>
-        <a href="/tool/snapchat" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-yellow-500 transition shadow-lg"><div class="text-3xl mb-3">👻</div><h2 class="text-xl font-bold text-yellow-500">Snapchat</h2></a>
+        <a href="/tool/tiktok" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-pink-500 transition shadow-lg text-xl font-bold text-pink-400">🎵 TikTok</a>
+        <a href="/tool/youtube" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-red-500 transition shadow-lg text-xl font-bold text-red-500">▶️ YouTube</a>
+        <a href="/tool/instagram" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-purple-500 transition shadow-lg text-xl font-bold text-purple-400">📸 Instagram</a>
+        <a href="/tool/facebook" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-blue-600 transition shadow-lg text-xl font-bold text-blue-500">📘 Facebook</a>
+        <a href="/tool/pinterest" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-red-600 transition shadow-lg text-xl font-bold text-red-600">📌 Pinterest</a>
+        <a href="/tool/snapchat" class="bg-[#18181b] border border-zinc-800 p-6 rounded-2xl hover:border-yellow-500 transition shadow-lg text-xl font-bold text-yellow-500">👻 Snapchat</a>
     </div>
 </body>
 </html>
@@ -130,24 +92,24 @@ TOOL_PAGE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ tool_name }} Downloader | WahabPanda</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; } .glass { background: #18181b; border: 1px solid #27272a; transition: background-color 0.3s; }</style>
+    <style>body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; } .glass { background: #18181b; border: 1px solid #27272a; }</style>
 </head>
 <body class="flex flex-col items-center min-h-screen">
     {{ navbar|safe }}
     <div class="w-full max-w-3xl glass rounded-2xl p-6 md:p-8 mt-8 mx-4 shadow-2xl border-t-4 mb-20" style="border-top-color: {{ theme_color }};">
-        <h1 class="text-3xl md:text-4xl font-black mb-2 text-center" style="color: {{ theme_color }};">{{ tool_name }} Video Downloader</h1>
+        <h1 class="text-3xl md:text-4xl font-black mb-6 text-center uppercase" style="color: {{ theme_color }};">{{ tool_name }} Downloader</h1>
         
         <form method="POST" onsubmit="document.getElementById('loading').style.display='block';">
             <div class="flex flex-col gap-4">
-                <textarea name="urls" rows="4" data-i18n-placeholder="p-link" placeholder="Paste links here (one link per line)..." class="w-full p-4 rounded-xl bg-zinc-900 text-white border border-zinc-700 focus:outline-none resize-none" style="focus:border-color: {{ theme_color }};" required></textarea>
+                <textarea name="urls" rows="3" placeholder="Paste link here..." class="w-full p-4 rounded-xl bg-zinc-900 text-white border border-zinc-700 focus:outline-none" required></textarea>
                 <button type="submit" class="w-full font-bold py-4 rounded-xl transition text-white text-lg shadow-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
-                    🚀 <span data-i18n="btn-ext">Extract All Videos</span>
+                    🚀 Start Extraction
                 </button>
             </div>
         </form>
 
-        <div id="loading" class="hidden text-center mt-8">
-            <p class="font-bold animate-pulse text-lg" style="color: {{ theme_color }};" data-i18n="wait">Extracting Videos... Please wait ⏳</p>
+        <div id="loading" class="hidden text-center mt-8 font-bold animate-pulse" style="color: {{ theme_color }};">
+            Fetching video... Please wait ⏳
         </div>
 
         {% if error %} <div class="mt-6 p-4 bg-red-900/30 border border-red-800 text-red-400 rounded-xl text-center font-bold">❌ {{ error }}</div> {% endif %}
@@ -155,13 +117,13 @@ TOOL_PAGE = """
         {% if videos %}
             <div class="mt-8 space-y-6">
             {% for video in videos %}
-            <div class="p-6 bg-zinc-900 rounded-xl border border-zinc-700 flex flex-col md:flex-row gap-6 items-center shadow-inner">
+            <div class="p-6 bg-zinc-900 rounded-xl border border-zinc-700 flex flex-col md:flex-row gap-6 items-center">
                 <img src="{{ video.cover }}" class="w-full md:w-1/3 rounded-xl shadow-lg border border-zinc-800">
-                <div class="w-full md:w-2/3 flex flex-col justify-center items-center md:items-start text-center md:text-left">
-                    <span class="text-xs font-black px-4 py-1 rounded-full w-max mb-3 uppercase tracking-widest shadow-md" style="background-color: {{ theme_color }}; color: #000;">✅ {{ video.platform }}</span>
-                    <h2 class="text-lg font-bold text-white mb-4 line-clamp-2">{{ video.title }}</h2>
+                <div class="w-full md:w-2/3 flex flex-col items-center md:items-start">
+                    <span class="text-xs font-black px-4 py-1 rounded-full mb-3 uppercase tracking-widest" style="background-color: {{ theme_color }}; color: #000;">✅ {{ video.platform }}</span>
+                    <h2 class="text-lg font-bold text-white mb-4 text-center md:text-left">{{ video.title }}</h2>
                     <a href="{{ video.download_link }}" target="_blank" class="w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
-                        📥 <span data-i18n="btn-dl">Download MP4</span>
+                        📥 Download MP4
                     </a>
                 </div>
             </div>
@@ -174,7 +136,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES
+# 🧠 BACKEND LOGIC
 # ==========================================
 @app.route('/')
 def home():
@@ -187,10 +149,8 @@ def tool_page(platform):
         'instagram': {'name': 'Instagram', 'color': '#a855f7'},
         'facebook': {'name': 'Facebook', 'color': '#3b82f6'},
         'youtube': {'name': 'YouTube', 'color': '#ef4444'},
-        'twitter': {'name': 'X (Twitter)', 'color': '#9ca3af'},
-        'sora': {'name': 'Sora AI', 'color': '#10b981'},
+        'twitter': {'name': 'Twitter', 'color': '#9ca3af'},
         'pinterest': {'name': 'Pinterest', 'color': '#dc2626'}, 
-        'reddit': {'name': 'Reddit', 'color': '#f97316'},    
         'snapchat': {'name': 'Snapchat', 'color': '#eab308'}  
     }
     
@@ -198,23 +158,20 @@ def tool_page(platform):
     config = configs[platform]
     
     videos_data = []
-    error_msgs = []
+    error_msg = None
 
     if request.method == 'POST':
         urls = [u.strip() for u in request.form.get('urls', '').split('\n') if u.strip()]
         
-        for url in urls[:5]: # Limit to 5 for free tier safety
+        for url in urls[:3]:
             try:
-                # 🛠️ طاقتور ڈاؤنلوڈر سیٹنگز جو ہم نے ڈسکس کی تھیں
                 ydl_opts = {
                     'quiet': True,
                     'no_warnings': True,
                     'format': 'best',
                     'http_headers': {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    },
-                    'extractor_retries': 3, 
-                    'socket_timeout': 15,
+                    }
                 }
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
@@ -227,25 +184,23 @@ def tool_page(platform):
                             'cover': info.get('thumbnail', 'https://via.placeholder.com/500'),
                             'download_link': proxy_url
                         })
-            except Exception:
-                error_msgs.append(f"Failed to fetch: {url[:30]}...")
+            except Exception as e:
+                error_msg = "Could not fetch video. Please check the link."
 
-    final_error = " | ".join(error_msgs) if error_msgs else None
-    return render_template_string(TOOL_PAGE, navbar=NAVBAR, tool_name=config['name'], theme_color=config['color'], videos=videos_data, error=final_error)
+    return render_template_string(TOOL_PAGE, navbar=NAVBAR, tool_name=config['name'], theme_color=config['color'], videos=videos_data, error=error_msg)
 
 @app.route('/proxy_download')
 def proxy_download():
     video_url = urllib.parse.unquote(request.args.get('video_url'))
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+    headers = {'User-Agent': 'Mozilla/5.0'}
     try:
         req = requests.get(video_url, headers=headers, stream=True)
         return Response(stream_with_context(req.iter_content(chunk_size=1024*1024)), 
                         content_type='application/octet-stream', 
                         headers={'Content-Disposition': 'attachment; filename="WahabPanda_Video.mp4"'})
     except Exception as e:
-        return f"Download Error: {str(e)}"
+        return f"Error: {str(e)}"
 
-# 🚀 رینڈر کی پورٹ سیٹنگ
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+# 🚀 Gunicorn کے لیے فائنل لائن
+if __name__ == "__main__":
+    app.run()
