@@ -1,6 +1,7 @@
 import yt_dlp
 import requests
 import urllib.parse
+import os
 from flask import Flask, render_template_string, request, Response, stream_with_context
 
 app = Flask(__name__)
@@ -82,7 +83,7 @@ NAVBAR = """
 """
 
 # ==========================================
-# 🏠 2. HOME PAGE (With Mega SEO Engine)
+# 🏠 2. HOME PAGE
 # ==========================================
 HOME_PAGE = """
 <!DOCTYPE html>
@@ -90,38 +91,7 @@ HOME_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>WahabPanda | Universal Video Downloader - TikTok, YouTube, Sora & More</title>
-    <meta name="title" content="WahabPanda | Universal Video Downloader - Free & Fast">
-    <meta name="description" content="Download HD videos from TikTok (No Watermark), YouTube, Sora AI, Instagram, Facebook, Twitter, and more. 100% Free, Fast, and secure multi-video downloader.">
-    <meta name="keywords" content="video downloader, tiktok video download no watermark, youtube downloader, sora video download, facebook video download, instagram reels download, free video saver, wahabpanda, savepanda alternative">
-    <meta name="robots" content="index, follow">
-    <meta name="author" content="Wahab Creators">
-
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="WahabPanda | Universal Video Downloader">
-    <meta property="og:description" content="Download HD videos from 1000+ websites for free. No watermark, fast and secure.">
-    <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg"> <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="WahabPanda | The Ultimate Video Downloader">
-    <meta property="twitter:description" content="Download your favorite videos instantly in HD.">
-
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "WahabPanda Downloader",
-      "url": "https://wahabpanda.com",
-      "description": "A free, universal video downloader supporting TikTok, YouTube, Instagram, and more.",
-      "applicationCategory": "MultimediaApplication",
-      "operatingSystem": "All",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
-    }
-    </script>
-
+    <title>WahabPanda | Universal Video Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }</style>
 </head>
@@ -150,7 +120,7 @@ HOME_PAGE = """
 """
 
 # ==========================================
-# 🛠️ 3. TOOL PAGE (With Dynamic SEO)
+# 🛠️ 3. TOOL PAGE
 # ==========================================
 TOOL_PAGE = """
 <!DOCTYPE html>
@@ -158,17 +128,7 @@ TOOL_PAGE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <title>{{ seo_title }} | WahabPanda</title>
-    <meta name="title" content="{{ seo_title }} - WahabPanda">
-    <meta name="description" content="{{ seo_desc }}">
-    <meta name="keywords" content="{{ seo_keywords }}">
-    <meta name="robots" content="index, follow">
-    
-    <meta property="og:title" content="{{ seo_title }}">
-    <meta property="og:description" content="{{ seo_desc }}">
-    <meta property="og:type" content="website">
-
+    <title>{{ tool_name }} Downloader | WahabPanda</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; } .glass { background: #18181b; border: 1px solid #27272a; transition: background-color 0.3s; }</style>
 </head>
@@ -176,7 +136,6 @@ TOOL_PAGE = """
     {{ navbar|safe }}
     <div class="w-full max-w-3xl glass rounded-2xl p-6 md:p-8 mt-8 mx-4 shadow-2xl border-t-4 mb-20" style="border-top-color: {{ theme_color }};">
         <h1 class="text-3xl md:text-4xl font-black mb-2 text-center" style="color: {{ theme_color }};">{{ tool_name }} Video Downloader</h1>
-        <p class="text-zinc-400 text-center mb-6 text-sm">Download HD {{ tool_name }} videos instantly. Paste one or multiple links.</p>
         
         <form method="POST" onsubmit="document.getElementById('loading').style.display='block';">
             <div class="flex flex-col gap-4">
@@ -192,7 +151,6 @@ TOOL_PAGE = """
         </div>
 
         {% if error %} <div class="mt-6 p-4 bg-red-900/30 border border-red-800 text-red-400 rounded-xl text-center font-bold">❌ {{ error }}</div> {% endif %}
-        {% if info %} <div class="mt-6 p-4 bg-yellow-900/30 border border-yellow-800 text-yellow-400 rounded-xl text-center font-bold">⚠️ {{ info }}</div> {% endif %}
         
         {% if videos %}
             <div class="mt-8 space-y-6">
@@ -201,24 +159,10 @@ TOOL_PAGE = """
                 <img src="{{ video.cover }}" class="w-full md:w-1/3 rounded-xl shadow-lg border border-zinc-800">
                 <div class="w-full md:w-2/3 flex flex-col justify-center items-center md:items-start text-center md:text-left">
                     <span class="text-xs font-black px-4 py-1 rounded-full w-max mb-3 uppercase tracking-widest shadow-md" style="background-color: {{ theme_color }}; color: #000;">✅ {{ video.platform }}</span>
-                    <h2 class="text-lg font-bold text-white mb-4 line-clamp-2 px-2 md:px-0">{{ video.title }}</h2>
-                    
-                    {% if video.formats %}
-                    <div class="w-full mb-4">
-                        <select onchange="this.nextElementSibling.href = this.value" class="w-full p-3 rounded-xl bg-zinc-800 text-white border border-zinc-600 focus:outline-none font-bold" style="border-left: 4px solid {{ theme_color }};">
-                            {% for f in video.formats %}
-                                <option value="{{ f.url }}">{{ f.res }} (HD Audio + Video)</option>
-                            {% endfor %}
-                        </select>
-                        <a href="{% if video.formats %}{{ video.formats[0].url }}{% else %}{{ video.download_link }}{% endif %}" target="_blank" class="mt-4 block w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
-                            📥 <span data-i18n="btn-dl">Download MP4</span>
-                        </a>
-                    </div>
-                    {% else %}
-                        <a href="{{ video.download_link }}" target="_blank" class="w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
-                            📥 <span data-i18n="btn-dl">Download MP4</span>
-                        </a>
-                    {% endif %}
+                    <h2 class="text-lg font-bold text-white mb-4 line-clamp-2">{{ video.title }}</h2>
+                    <a href="{{ video.download_link }}" target="_blank" class="w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
+                        📥 <span data-i18n="btn-dl">Download MP4</span>
+                    </a>
                 </div>
             </div>
             {% endfor %}
@@ -230,7 +174,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (With SEO Injector)
+# 🧠 BACKEND ROUTES
 # ==========================================
 @app.route('/')
 def home():
@@ -239,53 +183,30 @@ def home():
 @app.route('/tool/<platform>', methods=['GET', 'POST'])
 def tool_page(platform):
     configs = {
-        'tiktok': {'name': 'TikTok', 'color': '#ec4899', 'kw': 'tiktok downloader, tiktok video download, no watermark'},
-        'instagram': {'name': 'Instagram', 'color': '#a855f7', 'kw': 'instagram reels download, ig video saver, insta downloader'},
-        'facebook': {'name': 'Facebook', 'color': '#3b82f6', 'kw': 'facebook video download, fb watch downloader, fb reels save'},
-        'youtube': {'name': 'YouTube', 'color': '#ef4444', 'kw': 'youtube video downloader, yt shorts download, free yt saver'},
-        'twitter': {'name': 'X (Twitter)', 'color': '#9ca3af', 'kw': 'twitter video download, x video saver, download from x'},
-        'sora': {'name': 'Sora AI', 'color': '#10b981', 'kw': 'sora video downloader, openai sora download, sora ai saver'},
-        'pinterest': {'name': 'Pinterest', 'color': '#dc2626', 'kw': 'pinterest video download, pin saver, pinterest downloader'}, 
-        'reddit': {'name': 'Reddit', 'color': '#f97316', 'kw': 'reddit video download, save reddit video, reddit downloader'},    
-        'snapchat': {'name': 'Snapchat', 'color': '#eab308', 'kw': 'snapchat video download, snap story saver, snap downloader'}  
+        'tiktok': {'name': 'TikTok', 'color': '#ec4899'},
+        'instagram': {'name': 'Instagram', 'color': '#a855f7'},
+        'facebook': {'name': 'Facebook', 'color': '#3b82f6'},
+        'youtube': {'name': 'YouTube', 'color': '#ef4444'},
+        'twitter': {'name': 'X (Twitter)', 'color': '#9ca3af'},
+        'sora': {'name': 'Sora AI', 'color': '#10b981'},
+        'pinterest': {'name': 'Pinterest', 'color': '#dc2626'}, 
+        'reddit': {'name': 'Reddit', 'color': '#f97316'},    
+        'snapchat': {'name': 'Snapchat', 'color': '#eab308'}  
     }
     
     if platform not in configs: return "Tool not found!", 404
     config = configs[platform]
     
-    # 🚀 DYNAMIC SEO INJECTION
-    seo_title = f"{config['name']} Video Downloader"
-    seo_desc = f"Use WahabPanda to download {config['name']} videos for free in HD quality. No watermark, fast, and 100% secure."
-    seo_keywords = f"{config['kw']}, wahabpanda, free video downloader"
-    
     videos_data = []
     error_msgs = []
-    info_msg = None
 
     if request.method == 'POST':
-        raw_urls = request.form.get('urls', '').strip().split('\n')
-        urls = [u.strip() for u in raw_urls if u.strip()]
+        urls = [u.strip() for u in request.form.get('urls', '').split('\n') if u.strip()]
         
-        if len(urls) > 5:
-            info_msg = "We have processed the first 5 links to prevent server overload."
-            urls = urls[:5]
-
-        for url in urls:
-            url_lower = url.lower()
-            if platform in ['sora', 'twitter'] or 'x.com' in url_lower or 'twitter.com' in url_lower:
-                if 'sora.chatgpt.com' in url_lower or 'openai.com' in url_lower:
-                    error_msgs.append("Sora direct links protected. Use X/TikTok links.")
-                else:
-                    api_url = url_lower.replace("twitter.com", "api.vxtwitter.com").replace("x.com", "api.vxtwitter.com")
-                    try:
-                        res = requests.get(api_url).json()
-                        if 'mediaURLs' in res and len(res['mediaURLs']) > 0:
-                            videos_data.append({'platform': '𝕏 Twitter / X', 'title': res.get('text', 'Video')[:60], 'cover': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/X_logo_2023.svg', 'download_link': f"/proxy_download?video_url={urllib.parse.quote(res['mediaURLs'][0])}", 'formats': None})
-                        else: error_msgs.append(f"No video found: {url[:30]}...")
-                    except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
-            else:
-                try:
-                                    ydl_opts = {
+        for url in urls[:5]: # Limit to 5 for free tier safety
+            try:
+                # 🛠️ طاقتور ڈاؤنلوڈر سیٹنگز جو ہم نے ڈسکس کی تھیں
+                ydl_opts = {
                     'quiet': True,
                     'no_warnings': True,
                     'format': 'best',
@@ -296,30 +217,21 @@ def tool_page(platform):
                     'socket_timeout': 15,
                 }
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            
-                        info = ydl.extract_info(url, download=False)
-                        final_formats = None
-                        if platform == 'youtube':
-                            formats_list = []
-                            seen_res = set()
-                            for f in info.get('formats', []):
-                                res = f.get('height')
-                                if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none' and f.get('ext') == 'mp4':
-                                    res_str = f"{res}p"
-                                    if res_str not in seen_res:
-                                        proxy_url = f"/proxy_download?video_url={urllib.parse.quote(f.get('url'))}"
-                                        formats_list.append({'res': res_str, 'url': proxy_url, 'val': res})
-                                        seen_res.add(res_str)
-                            formats_list = sorted(formats_list, key=lambda x: x['val'], reverse=True)
-                            final_formats = formats_list
-
-                        raw_url = info.get('url')
-                        force_download_link = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}" if raw_url else ""
-                        videos_data.append({'platform': info.get('extractor_key', platform).capitalize(), 'title': info.get('title', 'Video')[:60], 'cover': info.get('thumbnail', 'https://via.placeholder.com/500'), 'download_link': force_download_link, 'formats': final_formats if final_formats and len(final_formats) > 0 else None})
-                except Exception: error_msgs.append(f"Download failed for: {url[:30]}...")
+                    info = ydl.extract_info(url, download=False)
+                    raw_url = info.get('url')
+                    if raw_url:
+                        proxy_url = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}"
+                        videos_data.append({
+                            'platform': info.get('extractor_key', platform).capitalize(),
+                            'title': info.get('title', 'Video')[:60],
+                            'cover': info.get('thumbnail', 'https://via.placeholder.com/500'),
+                            'download_link': proxy_url
+                        })
+            except Exception:
+                error_msgs.append(f"Failed to fetch: {url[:30]}...")
 
     final_error = " | ".join(error_msgs) if error_msgs else None
-    return render_template_string(TOOL_PAGE, navbar=NAVBAR, tool_name=config['name'], theme_color=config['color'], videos=videos_data, error=final_error, info=info_msg, seo_title=seo_title, seo_desc=seo_desc, seo_keywords=seo_keywords)
+    return render_template_string(TOOL_PAGE, navbar=NAVBAR, tool_name=config['name'], theme_color=config['color'], videos=videos_data, error=final_error)
 
 @app.route('/proxy_download')
 def proxy_download():
@@ -327,9 +239,13 @@ def proxy_download():
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     try:
         req = requests.get(video_url, headers=headers, stream=True)
-        return Response(stream_with_context(req.iter_content(chunk_size=1024*1024)), content_type='application/octet-stream', headers={'Content-Disposition': 'attachment; filename="WahabPanda_Video.mp4"'})
+        return Response(stream_with_context(req.iter_content(chunk_size=1024*1024)), 
+                        content_type='application/octet-stream', 
+                        headers={'Content-Disposition': 'attachment; filename="WahabPanda_Video.mp4"'})
     except Exception as e:
         return f"Download Error: {str(e)}"
 
+# 🚀 رینڈر کی پورٹ سیٹنگ
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
