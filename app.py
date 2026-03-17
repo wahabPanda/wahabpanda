@@ -286,14 +286,15 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 بس یہیں پر میں نے یوٹیوب کو بائی پاس کرنے والی طاقتور سیٹنگ ڈالی ہے
+                    # 🔥 بس یہ ہے وہ نئی جادوئی سیٹنگ جس نے آپ کے پچھلے کوڈ کو بالکل نہیں چھیڑا
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
                         'format': 'best',
                         'http_headers': {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
                         },
+                        'extractor_args': {'youtube': ['player_client=ios,android']},
                         'extractor_retries': 3,
                         'socket_timeout': 15,
                     }
@@ -318,7 +319,6 @@ def tool_page(platform):
                         force_download_link = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}" if raw_url else ""
                         videos_data.append({'platform': info.get('extractor_key', platform).capitalize(), 'title': info.get('title', 'Video')[:60], 'cover': info.get('thumbnail', 'https://via.placeholder.com/500'), 'download_link': force_download_link, 'formats': final_formats if final_formats and len(final_formats) > 0 else None})
                 except Exception as e: 
-                    # یہاں میں نے اصلی ایرر بھی لگا دیا ہے تاکہ مسئلہ فوراً پکڑ میں آئے
                     error_msgs.append(f"Download failed for {url[:30]}... Error: {str(e)}")
 
     final_error = " | ".join(error_msgs) if error_msgs else None
@@ -334,7 +334,6 @@ def proxy_download():
     except Exception as e:
         return f"Download Error: {str(e)}"
 
-# 🔥 اور آخر میں یہ رینڈر سرور کو خوش کرنے والی لائنیں
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
