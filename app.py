@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (THE SMART TV BYPASS - NO COOKIES NEEDED!)
+# 🧠 BACKEND ROUTES (THE COBALT API BYPASS - NO YT-DLP NEEDED FOR YT!)
 # ==========================================
 @app.route('/')
 def home():
@@ -284,19 +284,47 @@ def tool_page(platform):
                         else: error_msgs.append(f"No video found: {url[:30]}...")
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
+                
+                # 🔥 THE MASTER HACK: COBALT API BYPASS FOR YOUTUBE 🔥
+                # اگر پلیٹ فارم یوٹیوب ہے، تو ہم yt-dlp کو استعمال ہی نہیں کریں گے! سیدھا API سے لائیں گے
+                cobalt_success = False
+                if platform == 'youtube' or 'youtube.com' in url_lower or 'youtu.be' in url_lower:
+                    try:
+                        headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'WahabPanda/1.0'}
+                        payload = {"url": url, "vQuality": "720"}
+                        api_req = requests.post('https://api.cobalt.tools/api/json', json=payload, headers=headers, timeout=15)
+                        
+                        if api_req.status_code == 200:
+                            api_res = api_req.json()
+                            if api_res.get('status') in ['stream', 'redirect', 'success'] and api_res.get('url'):
+                                videos_data.append({
+                                    'platform': 'YouTube 🚀',
+                                    'title': 'YouTube Video (Fast Server)',
+                                    'cover': 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg',
+                                    'download_link': api_res.get('url'), # ڈائریکٹ اور سب سے تیز ڈاؤنلوڈ لنک
+                                    'formats': None
+                                })
+                                cobalt_success = True
+                    except Exception as e:
+                        pass # اگر API فیل ہو جائے تو نیچے والے yt-dlp پر چلا جائے گا
+                
+                # اگر API سے ویڈیو مل گئی ہے تو yt-dlp والے حصے کو چھوڑ کر اگلے لنک پر جاؤ
+                if cobalt_success:
+                    continue 
+
+                # ---------------- yt-dlp FALLBACK ----------------
                 try:
-                    # 🔥 ہم نے Cookies ہٹا دیں! اور YouTube کو Smart TV (tv) بتا دیا!
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'format': 'best', # 👈 سمپل بیسٹ فائل
-                        'extractor_args': {'youtube': ['player_client=tv,mweb']}, # 👈 جادو! ہم ٹی وی بن گئے ہیں!
-                        'geo_bypass': True, # 👈 لوکیشن کا مسئلہ حل کرنے کے لیے
+                        'format': 'best', 
+                        'extractor_args': {'youtube': ['player_client=ios']}, 
+                        'geo_bypass': True,
                         'nocheckcertificate': True,
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
-                        'extractor_retries': 5,
+                        'extractor_retries': 3,
                         'socket_timeout': 15,
                         'ignoreerrors': True,
                     }
@@ -305,7 +333,7 @@ def tool_page(platform):
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("Could not fetch video. YouTube server blocked the request. Try again.")
+                            raise Exception("YouTube server blocked the request. API bypass also failed.")
 
                         final_formats = []
                         seen_res = set()
