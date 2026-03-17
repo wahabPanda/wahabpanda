@@ -208,7 +208,7 @@ TOOL_PAGE = """
                     <div class="w-full mb-4">
                         <select onchange="this.nextElementSibling.href = this.value" class="w-full p-3 rounded-xl bg-zinc-800 text-white border border-zinc-600 focus:outline-none font-bold" style="border-left: 4px solid {{ theme_color }};">
                             {% for f in video.formats %}
-                                <option value="{{ f.url }}">{{ f.res }} (HD Audio + Video)</option>
+                                <option value="{{ f.url }}">{{ f.res }}</option>
                             {% endfor %}
                         </select>
                         <a href="{% if video.formats %}{{ video.formats[0].url }}{% else %}{{ video.download_link }}{% endif %}" target="_blank" class="mt-4 block w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (THE INVINCIBLE SETUP)
+# 🧠 BACKEND ROUTES (THE SMART TV BYPASS - NO COOKIES NEEDED!)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,36 +285,36 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 دی الٹیمیٹ، کریش پروف، فارمیٹ بائی پاس سیٹنگز!
+                    # 🔥 ہم نے Cookies ہٹا دیں! اور YouTube کو Smart TV (tv) بتا دیا!
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'cookiefile': 'cookies.txt',  # 👈 Bot Error کو ختم کرنے کے لیے
-                        'format': 'bestvideo+bestaudio/best/worst', # 👈 کوئی بھی فارمیٹ چلے گا
+                        'format': 'best', # 👈 سمپل بیسٹ فائل
+                        'extractor_args': {'youtube': ['player_client=tv,mweb']}, # 👈 جادو! ہم ٹی وی بن گئے ہیں!
+                        'geo_bypass': True, # 👈 لوکیشن کا مسئلہ حل کرنے کے لیے
+                        'nocheckcertificate': True,
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
-                        'extractor_retries': 3,
+                        'extractor_retries': 5,
                         'socket_timeout': 15,
-                        'ignoreerrors': True, # 👈 اگر کوئی ایک فارمیٹ مسنگ ہو تو کریش نہ ہو
+                        'ignoreerrors': True,
                     }
                     
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("Could not fetch video. Cookies might be expired or link is invalid.")
+                            raise Exception("Could not fetch video. YouTube server blocked the request. Try again.")
 
                         final_formats = []
                         seen_res = set()
 
-                        # ہمارا سمارٹ پائتھون دماغ جو خود فارمیٹ چُنے گا
                         if platform == 'youtube':
                             for f in info.get('formats', []):
                                 res = f.get('height')
-                                # کوشش کرے گا کہ آڈیو اور ویڈیو اکٹھی ہو (تاکہ بغیر آواز کے ویڈیو نہ آئے)
                                 if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none':
-                                    res_str = f"{res}p"
+                                    res_str = f"{res}p (Video + Audio)"
                                     if res_str not in seen_res:
                                         final_formats.append({'res': res_str, 'raw_url': f.get('url'), 'val': res})
                                         seen_res.add(res_str)
@@ -322,7 +322,6 @@ def tool_page(platform):
 
                         raw_url = info.get('url')
 
-                        # اگر مین لنک نہ ملے، تو ہم خود لسٹ میں سے نکال لیں گے
                         if not raw_url:
                             if final_formats:
                                 raw_url = final_formats[0]['raw_url']
