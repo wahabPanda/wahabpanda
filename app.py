@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (ULTIMATE CRASH-PROOF)
+# 🧠 BACKEND ROUTES (THE ULTIMATE MASTER FALLBACK)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,11 +285,10 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 جادو کی چھڑی (Format 'b' - سب سے بہترین اور بغیر سختی کے)
+                    # 🔥 ماسٹر ہیک: میں نے یہاں سے 'format' کی شرط بالکل اڑا دی ہے!
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'format': 'b',  # 👈 صرف 'b' کا مطلب ہے کہ جو بھی بیسٹ ویڈیو+آڈیو ملے، لے آؤ!
                         'cookiefile': 'cookies.txt',  
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -297,31 +296,61 @@ def tool_page(platform):
                         'extractor_retries': 3,
                         'socket_timeout': 15,
                     }
+                    
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        # yt-dlp کو کہا کہ بھائی جو بھی فارمیٹ ملے، بس اس کی معلومات لا دو
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("Could not fetch video. Link might be invalid.")
+                            raise Exception("Could not fetch video info.")
 
-                        final_formats = None
+                        final_formats = []
+                        seen_res = set()
+
+                        # 🧠 یہ ہے ہمارا اپنا پائتھون کا دماغ جو خود ویڈیو چُنے گا
                         if platform == 'youtube':
-                            formats_list = []
-                            seen_res = set()
                             for f in info.get('formats', []):
                                 res = f.get('height')
-                                # 🔥 یہاں سے بھی mp4 کی شرط ہٹا دی تاکہ WebM بھی شو ہو جائے
                                 if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none':
                                     res_str = f"{res}p"
                                     if res_str not in seen_res:
-                                        proxy_url = f"/proxy_download?video_url={urllib.parse.quote(f.get('url'))}"
-                                        formats_list.append({'res': res_str, 'url': proxy_url, 'val': res})
+                                        final_formats.append({'res': res_str, 'raw_url': f.get('url'), 'val': res})
                                         seen_res.add(res_str)
-                            formats_list = sorted(formats_list, key=lambda x: x['val'], reverse=True)
-                            final_formats = formats_list
+                            final_formats = sorted(final_formats, key=lambda x: x['val'], reverse=True)
 
                         raw_url = info.get('url')
-                        force_download_link = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}" if raw_url else ""
-                        videos_data.append({'platform': info.get('extractor_key', platform).capitalize(), 'title': info.get('title', 'Video')[:60], 'cover': info.get('thumbnail', 'https://via.placeholder.com/500'), 'download_link': force_download_link, 'formats': final_formats if final_formats and len(final_formats) > 0 else None})
+
+                        # 🛑 جادو: اگر yt-dlp کو کچھ نہ سمجھ آئے، تو ہمارا کوڈ خود لنک پکڑ لے گا
+                        if not raw_url:
+                            if final_formats:
+                                raw_url = final_formats[0]['raw_url']
+                            elif info.get('formats'):
+                                for f in reversed(info['formats']):
+                                    if f.get('url') and f.get('vcodec') != 'none':
+                                        raw_url = f.get('url')
+                                        break
+                                if not raw_url:
+                                    raw_url = info['formats'][-1].get('url')
+
+                        if not raw_url:
+                            raise Exception("No valid video link found inside this URL.")
+
+                        # پراکسی لنکس بنانا
+                        proxy_formats = []
+                        if final_formats:
+                            for f in final_formats:
+                                proxy_url = f"/proxy_download?video_url={urllib.parse.quote(f['raw_url'])}"
+                                proxy_formats.append({'res': f['res'], 'url': proxy_url, 'val': f['val']})
+
+                        force_download_link = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}"
+
+                        videos_data.append({
+                            'platform': info.get('extractor_key', platform).capitalize(),
+                            'title': info.get('title', 'Video')[:60],
+                            'cover': info.get('thumbnail', 'https://via.placeholder.com/500'),
+                            'download_link': force_download_link,
+                            'formats': proxy_formats if proxy_formats else None
+                        })
                 except Exception as e: 
                     error_msgs.append(f"Download Error: {str(e)}")
 
