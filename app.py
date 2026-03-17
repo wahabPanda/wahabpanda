@@ -212,12 +212,12 @@ TOOL_PAGE = """
                             {% endfor %}
                         </select>
                         <a href="{% if video.formats %}{{ video.formats[0].url }}{% else %}{{ video.download_link }}{% endif %}" target="_blank" class="mt-4 block w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
-                            📥 <span data-i18n="btn-dl">Download MP4</span>
+                            📥 <span data-i18n="btn-dl">Download Video</span>
                         </a>
                     </div>
                     {% else %}
                         <a href="{{ video.download_link }}" target="_blank" class="w-full text-center text-white font-black py-4 rounded-xl transition shadow-xl text-lg hover:scale-[1.02] transform" style="background-color: {{ theme_color }};">
-                            📥 <span data-i18n="btn-dl">Download MP4</span>
+                            📥 <span data-i18n="btn-dl">Download Video</span>
                         </a>
                     {% endif %}
                 </div>
@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (CRASH-PROOF UPDATE)
+# 🧠 BACKEND ROUTES (ULTIMATE CRASH-PROOF)
 # ==========================================
 @app.route('/')
 def home():
@@ -254,7 +254,6 @@ def tool_page(platform):
     if platform not in configs: return "Tool not found!", 404
     config = configs[platform]
     
-    # 🚀 DYNAMIC SEO INJECTION
     seo_title = f"{config['name']} Video Downloader"
     seo_desc = f"Use WahabPanda to download {config['name']} videos for free in HD quality. No watermark, fast, and 100% secure."
     seo_keywords = f"{config['kw']}, wahabpanda, free video downloader"
@@ -286,25 +285,23 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 CRASH-PROOF SETTINGS
+                    # 🔥 جادو کی چھڑی (Format 'b' - سب سے بہترین اور بغیر سختی کے)
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'format': 'best[ext=mp4]/best',  # 👈 سیدھا اور سمارٹ فارمیٹ
+                        'format': 'b',  # 👈 صرف 'b' کا مطلب ہے کہ جو بھی بیسٹ ویڈیو+آڈیو ملے، لے آؤ!
                         'cookiefile': 'cookies.txt',  
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
                         'extractor_retries': 3,
                         'socket_timeout': 15,
-                        # ignoreerrors ہٹا دیا ہے تاکہ NoneType کا کریش نہ آئے
                     }
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
                         
-                        # 🛑 جادو کی لائن: اگر یوٹیوب کچھ نہ دے، تو کریش مت ہو!
                         if not info:
-                            raise Exception("Could not fetch video. Link might be invalid or cookies are rejected.")
+                            raise Exception("Could not fetch video. Link might be invalid.")
 
                         final_formats = None
                         if platform == 'youtube':
@@ -312,7 +309,8 @@ def tool_page(platform):
                             seen_res = set()
                             for f in info.get('formats', []):
                                 res = f.get('height')
-                                if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none' and f.get('ext') == 'mp4':
+                                # 🔥 یہاں سے بھی mp4 کی شرط ہٹا دی تاکہ WebM بھی شو ہو جائے
+                                if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none':
                                     res_str = f"{res}p"
                                     if res_str not in seen_res:
                                         proxy_url = f"/proxy_download?video_url={urllib.parse.quote(f.get('url'))}"
@@ -325,7 +323,6 @@ def tool_page(platform):
                         force_download_link = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}" if raw_url else ""
                         videos_data.append({'platform': info.get('extractor_key', platform).capitalize(), 'title': info.get('title', 'Video')[:60], 'cover': info.get('thumbnail', 'https://via.placeholder.com/500'), 'download_link': force_download_link, 'formats': final_formats if final_formats and len(final_formats) > 0 else None})
                 except Exception as e: 
-                    # اب سکرین پر اصلی اور سیدھا ایرر آئے گا، کریش نہیں ہوگا
                     error_msgs.append(f"Download Error: {str(e)}")
 
     final_error = " | ".join(error_msgs) if error_msgs else None
