@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (SERVER IP BYPASS FIX)
+# 🧠 BACKEND ROUTES (COOKIES + SMART FORMAT = ULTIMATE BYPASS)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,14 +285,14 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 لوکیشن اور کوکیز کا بائی پاس (صرف اینڈرائیڈ کلائنٹ اور کوڈ 18/22 کا استعمال)
+                    # 🔥 دی الٹیمیٹ سیٹنگ (Cookies + No Format Restriction + Android/Web Spoofing)
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'format': '18/22/b/best',  # 👈 سیدھا 360p یا 720p مانگو جو ہر سرور پر مل جاتا ہے
-                        'extractor_args': {'youtube': ['player_client=android']}, # 👈 سرور کو موبائل بنا دیا
+                        'cookiefile': 'cookies.txt',  # 👈 Bot Error کو ختم کرنے کے لیے
+                        'extractor_args': {'youtube': ['player_client=android,web']}, # 👈 یوٹیوب کو دھوکہ دینے کے لیے
                         'http_headers': {
-                            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
                         'extractor_retries': 3,
                         'socket_timeout': 15,
@@ -302,11 +302,12 @@ def tool_page(platform):
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("Could not fetch video info.")
+                            raise Exception("Could not fetch video info. YouTube might be blocking the request.")
 
                         final_formats = []
                         seen_res = set()
 
+                        # 🧠 ہمارا سمارٹ فارمیٹ پِکر (Format Error کو ختم کرنے کے لیے)
                         if platform == 'youtube':
                             for f in info.get('formats', []):
                                 res = f.get('height')
