@@ -1,4 +1,5 @@
 import os
+import re
 import yt_dlp
 import requests
 import urllib.parse
@@ -231,7 +232,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (THE COBALT API BYPASS - NO YT-DLP NEEDED FOR YT!)
+# 🧠 BACKEND ROUTES (THE MASTER PIPED API BYPASS!)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,42 +286,65 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 
-                # 🔥 THE MASTER HACK: COBALT API BYPASS FOR YOUTUBE 🔥
-                # اگر پلیٹ فارم یوٹیوب ہے، تو ہم yt-dlp کو استعمال ہی نہیں کریں گے! سیدھا API سے لائیں گے
-                cobalt_success = False
+                # 🔥 THE ULTIMATE WEAPON: PIPED NETWORK BYPASS (No IP Blocks) 🔥
+                api_success = False
                 if platform == 'youtube' or 'youtube.com' in url_lower or 'youtu.be' in url_lower:
-                    try:
-                        headers = {'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'WahabPanda/1.0'}
-                        payload = {"url": url, "vQuality": "720"}
-                        api_req = requests.post('https://api.cobalt.tools/api/json', json=payload, headers=headers, timeout=15)
-                        
-                        if api_req.status_code == 200:
-                            api_res = api_req.json()
-                            if api_res.get('status') in ['stream', 'redirect', 'success'] and api_res.get('url'):
-                                videos_data.append({
-                                    'platform': 'YouTube 🚀',
-                                    'title': 'YouTube Video (Fast Server)',
-                                    'cover': 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg',
-                                    'download_link': api_res.get('url'), # ڈائریکٹ اور سب سے تیز ڈاؤنلوڈ لنک
-                                    'formats': None
-                                })
-                                cobalt_success = True
-                    except Exception as e:
-                        pass # اگر API فیل ہو جائے تو نیچے والے yt-dlp پر چلا جائے گا
+                    video_id = None
+                    # ہوشیار ریجیکس جو نارمل ویڈیو اور Shorts دونوں میں سے ID نکال لے گا
+                    match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11})', url)
+                    if match:
+                        video_id = match.group(1)
+                    
+                    if video_id:
+                        # 3 مختلف ممالک کے سرورز کی لسٹ۔ اگر ایک یوٹیوب سے بلاک ہو تو دوسرا کام کرے گا!
+                        instances = [
+                            "https://pipedapi.kavin.rocks",
+                            "https://pipedapi.tokhmi.xyz",
+                            "https://api.piped.projectsegfau.lt"
+                        ]
+                        for instance in instances:
+                            try:
+                                res = requests.get(f"{instance}/streams/{video_id}", timeout=10).json()
+                                streams = res.get('videoStreams', [])
+                                
+                                # ہم صرف وہ ویڈیوز لیں گے جن کے ساتھ آڈیو بھی اٹیچ ہو
+                                valid_streams = [s for s in streams if not s.get('videoOnly') and s.get('url')]
+                                
+                                if valid_streams:
+                                    formats_list = []
+                                    seen_res = set()
+                                    for s in valid_streams:
+                                        q = s.get('quality', 'HD')
+                                        if q not in seen_res:
+                                            # یہ ڈائریکٹ پراکسی لنک ہے، اب ہمیں render کی پراکسی کی بھی ضرورت نہیں!
+                                            proxy_url = f"/proxy_download?video_url={urllib.parse.quote(s['url'])}"
+                                            formats_list.append({'res': f"{q} (MP4)", 'url': proxy_url, 'val': int(q.replace('p','')) if str(q).replace('p','').isdigit() else 0})
+                                            seen_res.add(q)
+                                    
+                                    formats_list = sorted(formats_list, key=lambda x: x['val'], reverse=True)
+                                    
+                                    videos_data.append({
+                                        'platform': 'YouTube 🚀 (VIP Server)',
+                                        'title': res.get('title', 'YouTube Video')[:60],
+                                        'cover': res.get('thumbnailUrl', 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'),
+                                        'download_link': formats_list[0]['url'] if formats_list else "",
+                                        'formats': formats_list
+                                    })
+                                    api_success = True
+                                    break # جیسے ہی ویڈیو ملے، لوپ بند کر دو
+                            except Exception:
+                                continue # اگر ایک سرور ڈاؤن ہو تو اگلا چیک کرو
                 
-                # اگر API سے ویڈیو مل گئی ہے تو yt-dlp والے حصے کو چھوڑ کر اگلے لنک پر جاؤ
-                if cobalt_success:
+                # اگر VIP سرور نے کام کر دیا ہے، تو پرانے yt-dlp کے پاس جانے کی ضرورت ہی نہیں!
+                if api_success:
                     continue 
 
-                # ---------------- yt-dlp FALLBACK ----------------
+                # ---------------- yt-dlp FALLBACK (For TikTok, Insta, etc.) ----------------
                 try:
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
                         'format': 'best', 
-                        'extractor_args': {'youtube': ['player_client=ios']}, 
-                        'geo_bypass': True,
-                        'nocheckcertificate': True,
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
@@ -333,7 +357,7 @@ def tool_page(platform):
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("YouTube server blocked the request. API bypass also failed.")
+                            raise Exception("Server blocked the request. API bypass also failed. Try again later.")
 
                         final_formats = []
                         seen_res = set()
@@ -342,7 +366,7 @@ def tool_page(platform):
                             for f in info.get('formats', []):
                                 res = f.get('height')
                                 if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none':
-                                    res_str = f"{res}p (Video + Audio)"
+                                    res_str = f"{res}p"
                                     if res_str not in seen_res:
                                         final_formats.append({'res': res_str, 'raw_url': f.get('url'), 'val': res})
                                         seen_res.add(res_str)
