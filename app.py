@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (With SEO Injector)
+# 🧠 BACKEND ROUTES (With SEO & COOKIES)
 # ==========================================
 @app.route('/')
 def home():
@@ -286,15 +286,15 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 بس یہ ہے وہ نئی جادوئی سیٹنگ جس نے آپ کے پچھلے کوڈ کو بالکل نہیں چھیڑا
+                    # 🔥 جادو کی چھڑی (COOKIES SETTING)
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
                         'format': 'best',
+                        'cookiefile': 'cookies.txt',  # 👈 یوٹیوب کی دیوار توڑنے والا بم
                         'http_headers': {
-                            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
-                        'extractor_args': {'youtube': ['player_client=ios,android']},
                         'extractor_retries': 3,
                         'socket_timeout': 15,
                     }
