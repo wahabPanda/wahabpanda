@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (COOKIES + SMART FORMAT = ULTIMATE BYPASS)
+# 🧠 BACKEND ROUTES (THE INVINCIBLE SETUP)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,32 +285,34 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 دی الٹیمیٹ سیٹنگ (Cookies + No Format Restriction + Android/Web Spoofing)
+                    # 🔥 دی الٹیمیٹ، کریش پروف، فارمیٹ بائی پاس سیٹنگز!
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
                         'cookiefile': 'cookies.txt',  # 👈 Bot Error کو ختم کرنے کے لیے
-                        'extractor_args': {'youtube': ['player_client=android,web']}, # 👈 یوٹیوب کو دھوکہ دینے کے لیے
+                        'format': 'bestvideo+bestaudio/best/worst', # 👈 کوئی بھی فارمیٹ چلے گا
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
                         'extractor_retries': 3,
                         'socket_timeout': 15,
+                        'ignoreerrors': True, # 👈 اگر کوئی ایک فارمیٹ مسنگ ہو تو کریش نہ ہو
                     }
                     
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("Could not fetch video info. YouTube might be blocking the request.")
+                            raise Exception("Could not fetch video. Cookies might be expired or link is invalid.")
 
                         final_formats = []
                         seen_res = set()
 
-                        # 🧠 ہمارا سمارٹ فارمیٹ پِکر (Format Error کو ختم کرنے کے لیے)
+                        # ہمارا سمارٹ پائتھون دماغ جو خود فارمیٹ چُنے گا
                         if platform == 'youtube':
                             for f in info.get('formats', []):
                                 res = f.get('height')
+                                # کوشش کرے گا کہ آڈیو اور ویڈیو اکٹھی ہو (تاکہ بغیر آواز کے ویڈیو نہ آئے)
                                 if res and f.get('vcodec') != 'none' and f.get('acodec') != 'none':
                                     res_str = f"{res}p"
                                     if res_str not in seen_res:
@@ -320,6 +322,7 @@ def tool_page(platform):
 
                         raw_url = info.get('url')
 
+                        # اگر مین لنک نہ ملے، تو ہم خود لسٹ میں سے نکال لیں گے
                         if not raw_url:
                             if final_formats:
                                 raw_url = final_formats[0]['raw_url']
