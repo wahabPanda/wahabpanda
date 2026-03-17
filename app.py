@@ -232,7 +232,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (THE MASTER PIPED API BYPASS!)
+# 🧠 BACKEND ROUTES (THE ULTIMATE INVIDIOUS & COBALT BYPASS)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,61 +285,78 @@ def tool_page(platform):
                         else: error_msgs.append(f"No video found: {url[:30]}...")
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
-                
-                # 🔥 THE ULTIMATE WEAPON: PIPED NETWORK BYPASS (No IP Blocks) 🔥
                 api_success = False
+
+                # 🔥 دی ماسٹر پلان: یوٹیوب کے لیے ہم رینڈر کا استعمال ہی نہیں کریں گے! 🔥
                 if platform == 'youtube' or 'youtube.com' in url_lower or 'youtu.be' in url_lower:
                     video_id = None
-                    # ہوشیار ریجیکس جو نارمل ویڈیو اور Shorts دونوں میں سے ID نکال لے گا
                     match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11})', url)
                     if match:
                         video_id = match.group(1)
                     
                     if video_id:
-                        # 3 مختلف ممالک کے سرورز کی لسٹ۔ اگر ایک یوٹیوب سے بلاک ہو تو دوسرا کام کرے گا!
-                        instances = [
-                            "https://pipedapi.kavin.rocks",
-                            "https://pipedapi.tokhmi.xyz",
-                            "https://api.piped.projectsegfau.lt"
+                        # پلان اے: Invidious Proxy Network (5 وی آئی پی سرورز)
+                        inv_instances = [
+                            "https://vid.puffyan.us",
+                            "https://inv.tux.pizza",
+                            "https://invidious.nerdvpn.de",
+                            "https://inv.nadeko.net",
+                            "https://invidious.no-logs.com"
                         ]
-                        for instance in instances:
+                        for inst in inv_instances:
                             try:
-                                res = requests.get(f"{instance}/streams/{video_id}", timeout=10).json()
-                                streams = res.get('videoStreams', [])
-                                
-                                # ہم صرف وہ ویڈیوز لیں گے جن کے ساتھ آڈیو بھی اٹیچ ہو
-                                valid_streams = [s for s in streams if not s.get('videoOnly') and s.get('url')]
-                                
-                                if valid_streams:
+                                res = requests.get(f"{inst}/api/v1/videos/{video_id}", timeout=7).json()
+                                if 'formatStreams' in res and len(res['formatStreams']) > 0:
                                     formats_list = []
-                                    seen_res = set()
-                                    for s in valid_streams:
-                                        q = s.get('quality', 'HD')
-                                        if q not in seen_res:
-                                            # یہ ڈائریکٹ پراکسی لنک ہے، اب ہمیں render کی پراکسی کی بھی ضرورت نہیں!
-                                            proxy_url = f"/proxy_download?video_url={urllib.parse.quote(s['url'])}"
-                                            formats_list.append({'res': f"{q} (MP4)", 'url': proxy_url, 'val': int(q.replace('p','')) if str(q).replace('p','').isdigit() else 0})
-                                            seen_res.add(q)
+                                    for s in res['formatStreams']:
+                                        if s.get('container') == 'mp4':
+                                            itag = s.get('itag', '22')
+                                            res_text = s.get('resolution', '720p')
+                                            
+                                            # یہ جادوئی لنک رینڈر کو چھوڑ کر سیدھا یوزر کو ویڈیو دے گا!
+                                            dl_url = f"{inst}/latest_version?id={video_id}&itag={itag}&local=true"
+                                            formats_list.append({
+                                                'res': f"{res_text} (VIP Fast Server)",
+                                                'url': dl_url,
+                                                'val': int(str(res_text).replace('p', '')) if str(res_text).replace('p', '').isdigit() else 0
+                                            })
                                     
-                                    formats_list = sorted(formats_list, key=lambda x: x['val'], reverse=True)
-                                    
+                                    if formats_list:
+                                        formats_list = sorted(formats_list, key=lambda x: x['val'], reverse=True)
+                                        videos_data.append({
+                                            'platform': 'YouTube 🚀 (Pro Server)',
+                                            'title': res.get('title', 'YouTube Video')[:60],
+                                            'cover': f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+                                            'download_link': formats_list[0]['url'],
+                                            'formats': formats_list
+                                        })
+                                        api_success = True
+                                        break
+                            except Exception:
+                                continue # اگر ایک سرور خراب ہے تو اگلے پر جاؤ
+                        
+                        # پلان بی: اگر سارے پرائیویٹ سرور ڈاؤن ہوں تو Cobalt API کا استعمال کریں
+                        if not api_success:
+                            try:
+                                headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
+                                res = requests.post('https://co.wuk.sh/api/json', json={"url": url}, headers=headers, timeout=10).json()
+                                if res.get('status') in ['stream', 'redirect', 'success'] and res.get('url'):
                                     videos_data.append({
-                                        'platform': 'YouTube 🚀 (VIP Server)',
-                                        'title': res.get('title', 'YouTube Video')[:60],
-                                        'cover': res.get('thumbnailUrl', 'https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg'),
-                                        'download_link': formats_list[0]['url'] if formats_list else "",
-                                        'formats': formats_list
+                                        'platform': 'YouTube ⚡ (Cobalt)',
+                                        'title': 'YouTube Video',
+                                        'cover': f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg",
+                                        'download_link': res.get('url'),
+                                        'formats': None
                                     })
                                     api_success = True
-                                    break # جیسے ہی ویڈیو ملے، لوپ بند کر دو
-                            except Exception:
-                                continue # اگر ایک سرور ڈاؤن ہو تو اگلا چیک کرو
+                            except:
+                                pass
                 
-                # اگر VIP سرور نے کام کر دیا ہے، تو پرانے yt-dlp کے پاس جانے کی ضرورت ہی نہیں!
+                # اگر یوٹیوب کا کام پرائیویٹ سرورز نے کر دیا تو نیچے yt-dlp پر جانے کی ضرورت ہی نہیں!
                 if api_success:
                     continue 
 
-                # ---------------- yt-dlp FALLBACK (For TikTok, Insta, etc.) ----------------
+                # ---------------- yt-dlp FALLBACK (صرف ٹک ٹاک، فیس بک وغیرہ کے لیے) ----------------
                 try:
                     ydl_opts = {
                         'quiet': True, 
@@ -357,7 +374,7 @@ def tool_page(platform):
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
-                            raise Exception("Server blocked the request. API bypass also failed. Try again later.")
+                            raise Exception("Download failed. Link might be private or currently blocked by the server.")
 
                         final_formats = []
                         seen_res = set()
