@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (THE ULTIMATE MASTER FALLBACK)
+# 🧠 BACKEND ROUTES (SERVER IP BYPASS FIX)
 # ==========================================
 @app.route('/')
 def home():
@@ -285,20 +285,20 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 ماسٹر ہیک: میں نے یہاں سے 'format' کی شرط بالکل اڑا دی ہے!
+                    # 🔥 لوکیشن اور کوکیز کا بائی پاس (صرف اینڈرائیڈ کلائنٹ اور کوڈ 18/22 کا استعمال)
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'cookiefile': 'cookies.txt',  
+                        'format': '18/22/b/best',  # 👈 سیدھا 360p یا 720p مانگو جو ہر سرور پر مل جاتا ہے
+                        'extractor_args': {'youtube': ['player_client=android']}, # 👈 سرور کو موبائل بنا دیا
                         'http_headers': {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
                         },
                         'extractor_retries': 3,
                         'socket_timeout': 15,
                     }
                     
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        # yt-dlp کو کہا کہ بھائی جو بھی فارمیٹ ملے، بس اس کی معلومات لا دو
                         info = ydl.extract_info(url, download=False)
                         
                         if not info:
@@ -307,7 +307,6 @@ def tool_page(platform):
                         final_formats = []
                         seen_res = set()
 
-                        # 🧠 یہ ہے ہمارا اپنا پائتھون کا دماغ جو خود ویڈیو چُنے گا
                         if platform == 'youtube':
                             for f in info.get('formats', []):
                                 res = f.get('height')
@@ -320,7 +319,6 @@ def tool_page(platform):
 
                         raw_url = info.get('url')
 
-                        # 🛑 جادو: اگر yt-dlp کو کچھ نہ سمجھ آئے، تو ہمارا کوڈ خود لنک پکڑ لے گا
                         if not raw_url:
                             if final_formats:
                                 raw_url = final_formats[0]['raw_url']
@@ -335,7 +333,6 @@ def tool_page(platform):
                         if not raw_url:
                             raise Exception("No valid video link found inside this URL.")
 
-                        # پراکسی لنکس بنانا
                         proxy_formats = []
                         if final_formats:
                             for f in final_formats:
