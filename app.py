@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (With SEO & COOKIES)
+# 🧠 BACKEND ROUTES (With SEO & COOKIES + FORMAT FIX)
 # ==========================================
 @app.route('/')
 def home():
@@ -286,17 +286,18 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 جادو کی چھڑی (COOKIES SETTING)
+                    # 🔥 جادو کی چھڑی (COOKIES + FORMAT FIX SETTING)
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'format': 'best',
+                        'format': 'best[ext=mp4]/best/worst',  # 👈 یوٹیوب Shorts کا مسئلہ حل کرنے کے لیے
                         'cookiefile': 'cookies.txt',  # 👈 یوٹیوب کی دیوار توڑنے والا بم
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
                         'extractor_retries': 3,
                         'socket_timeout': 15,
+                        'ignoreerrors': True, # 👈 کوئی ایک فارمیٹ خراب ہو تو سرور کریش نہ ہو
                     }
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
