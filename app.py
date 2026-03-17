@@ -231,7 +231,7 @@ TOOL_PAGE = """
 """
 
 # ==========================================
-# 🧠 BACKEND ROUTES (With SEO & COOKIES + FORMAT FIX)
+# 🧠 BACKEND ROUTES (CRASH-PROOF UPDATE)
 # ==========================================
 @app.route('/')
 def home():
@@ -286,21 +286,26 @@ def tool_page(platform):
                     except Exception: error_msgs.append(f"Security blocked: {url[:30]}...")
             else:
                 try:
-                    # 🔥 جادو کی چھڑی (COOKIES + FORMAT FIX SETTING)
+                    # 🔥 CRASH-PROOF SETTINGS
                     ydl_opts = {
                         'quiet': True, 
                         'no_warnings': True, 
-                        'format': 'best[ext=mp4]/best/worst',  # 👈 یوٹیوب Shorts کا مسئلہ حل کرنے کے لیے
-                        'cookiefile': 'cookies.txt',  # 👈 یوٹیوب کی دیوار توڑنے والا بم
+                        'format': 'best[ext=mp4]/best',  # 👈 سیدھا اور سمارٹ فارمیٹ
+                        'cookiefile': 'cookies.txt',  
                         'http_headers': {
                             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                         },
                         'extractor_retries': 3,
                         'socket_timeout': 15,
-                        'ignoreerrors': True, # 👈 کوئی ایک فارمیٹ خراب ہو تو سرور کریش نہ ہو
+                        # ignoreerrors ہٹا دیا ہے تاکہ NoneType کا کریش نہ آئے
                     }
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(url, download=False)
+                        
+                        # 🛑 جادو کی لائن: اگر یوٹیوب کچھ نہ دے، تو کریش مت ہو!
+                        if not info:
+                            raise Exception("Could not fetch video. Link might be invalid or cookies are rejected.")
+
                         final_formats = None
                         if platform == 'youtube':
                             formats_list = []
@@ -320,7 +325,8 @@ def tool_page(platform):
                         force_download_link = f"/proxy_download?video_url={urllib.parse.quote(raw_url)}" if raw_url else ""
                         videos_data.append({'platform': info.get('extractor_key', platform).capitalize(), 'title': info.get('title', 'Video')[:60], 'cover': info.get('thumbnail', 'https://via.placeholder.com/500'), 'download_link': force_download_link, 'formats': final_formats if final_formats and len(final_formats) > 0 else None})
                 except Exception as e: 
-                    error_msgs.append(f"Download failed for {url[:30]}... Error: {str(e)}")
+                    # اب سکرین پر اصلی اور سیدھا ایرر آئے گا، کریش نہیں ہوگا
+                    error_msgs.append(f"Download Error: {str(e)}")
 
     final_error = " | ".join(error_msgs) if error_msgs else None
     return render_template_string(TOOL_PAGE, navbar=NAVBAR, tool_name=config['name'], theme_color=config['color'], videos=videos_data, error=final_error, info=info_msg, seo_title=seo_title, seo_desc=seo_desc, seo_keywords=seo_keywords)
